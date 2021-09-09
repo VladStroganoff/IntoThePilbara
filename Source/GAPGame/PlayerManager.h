@@ -43,10 +43,10 @@ public:
 	// Sets default values for this character's properties
 	APlayerManager();
 
-	UPROPERTY(BlueprintReadOnly, Category = Mesh)
+	//UPROPERTY(BlueprintReadOnly, Category = Mesh)
 	TMap<EEquippableSlot, USkeletalMesh*> NakedMeshes;
 
-	UPROPERTY(BlueprintReadOnly, Category = Mesh)
+	//UPROPERTY(BlueprintReadOnly, Category = Mesh)
 	TMap<EEquippableSlot, USkeletalMeshComponent*> PlayerMeshes;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
