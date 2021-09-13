@@ -22,6 +22,7 @@
 #include "Weapons/MeleeDamage.h"
 #include "Weapons/Weapon.h"
 #include "Weapons/ThrowableWeapon.h"
+#include "Characters/PlayerInputComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GAPGame.h"
 
@@ -43,7 +44,8 @@ APlayerManager::APlayerManager()
 	CameraComponent->SetupAttachment(SpringArmComponent);
 	CameraComponent->bUsePawnControlRotation = true;
 
-
+	InputComponent = CreateDefaultSubobject<UPlayerInputComponent>("InputComponent");
+	InputComponent->_playerManager = this;
 
 	
 	HelmetMesh = PlayerMeshes.Add(EEquippableSlot::EIS_Sensor, CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SensorMesh")));
@@ -115,19 +117,19 @@ void APlayerManager::BeginPlay()
 	}
 }
 
-void APlayerManager::ServerUseThrowable_Implementation()
-{
-	UseThrowable();
-}
+//void APlayerManager::ServerUseThrowable_Implementation()
+//{
+//	UseThrowable();
+//}
 
-void APlayerManager::MulticastPlayThrowableTossFX_Implementation(UAnimMontage* montageToPlay)
-{
-	if (GetNetMode() != NM_DedicatedServer && !IsLocallyControlled())
-	{
-		PlayAnimMontage(montageToPlay);
-	}
-}
-
+//void APlayerManager::MulticastPlayThrowableTossFX_Implementation(UAnimMontage* montageToPlay)
+//{
+//	if (GetNetMode() != NM_DedicatedServer && !IsLocallyControlled())
+//	{
+//		PlayAnimMontage(montageToPlay);
+//	}
+//}
+//
 UThrowableItem * APlayerManager::GetThrowable() const
 {
 	UThrowableItem* equippedThrowable = nullptr;
@@ -141,62 +143,63 @@ UThrowableItem * APlayerManager::GetThrowable() const
 
 void APlayerManager::UseThrowable()
 {
-	if (CanUseThrowable())
-	{
-		if (UThrowableItem* throwable = GetThrowable())
-		{
-			if (HasAuthority())
-			{
-				SpawnThrowable();
-					if (PlayerInventory)
-					{
-						PlayerInventory->ConsumeItem(throwable, 1);
-					}
-			}
-			else
-			{
-				if (throwable->GetQuantity() <= 1)
-				{
-					EquippedItems.Remove(EEquippableSlot::EIS_ThrowbleItem);
-					OnEquippedItemsChanged.Broadcast(EEquippableSlot::EIS_ThrowbleItem, nullptr);
-				}
+	InputComponent->UseThrowable();
+	//if (CanUseThrowable())
+	//{
+	//	if (UThrowableItem* throwable = GetThrowable())
+	//	{
+	//		if (HasAuthority())
+	//		{
+	//			SpawnThrowable();
+	//				if (PlayerInventory)
+	//				{
+	//					PlayerInventory->ConsumeItem(throwable, 1);
+	//				}
+	//		}
+	//		else
+	//		{
+	//			if (throwable->GetQuantity() <= 1)
+	//			{
+	//				EquippedItems.Remove(EEquippableSlot::EIS_ThrowbleItem);
+	//				OnEquippedItemsChanged.Broadcast(EEquippableSlot::EIS_ThrowbleItem, nullptr);
+	//			}
 
-				PlayAnimMontage(throwable->ThrowableTossAnimation);
-				ServerUseThrowable();
-			}
-		}
-	}
+	//			PlayAnimMontage(throwable->ThrowableTossAnimation);
+	//			ServerUseThrowable();
+	//		}
+	//	}
+	//}
 }
 
-void APlayerManager::SpawnThrowable()
-{
-	if (HasAuthority())
-	{
-		if (UThrowableItem* currentThrowable = GetThrowable())
-		{
-			if (currentThrowable->ThrowableClass)
-			{
-				FActorSpawnParameters spawnParams;
-				spawnParams.Owner = spawnParams.Instigator = this;
-				spawnParams.bNoFail = true;
-				spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-
-				FVector camLocation;
-				FRotator camRotation;
-
-				GetController()->GetPlayerViewPoint(camLocation, camRotation);
-
-				camLocation = (camRotation.Vector()* 20.0f) + camLocation;
-
-				if (AThrowableWeapon* throwableWeapon = GetWorld()->SpawnActor<AThrowableWeapon>(currentThrowable->ThrowableClass, FTransform(camRotation, camLocation)))
-				{
-					MulticastPlayThrowableTossFX(currentThrowable->ThrowableTossAnimation);
-				}
-			}
-		}
-	}
-}
-
+//void APlayerManager::SpawnThrowable()
+//{
+//	if (HasAuthority())
+//	{
+//		if (UThrowableItem* currentThrowable = GetThrowable())
+//		{
+//			if (currentThrowable->ThrowableClass)
+//			{
+//				FActorSpawnParameters spawnParams;
+//				spawnParams.Owner = spawnParams.Instigator = this;
+//				spawnParams.bNoFail = true;
+//				spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+//
+//				FVector camLocation;
+//				FRotator camRotation;
+//
+//				GetController()->GetPlayerViewPoint(camLocation, camRotation);
+//
+//				camLocation = (camRotation.Vector()* 20.0f) + camLocation;
+//
+//				if (AThrowableWeapon* throwableWeapon = GetWorld()->SpawnActor<AThrowableWeapon>(currentThrowable->ThrowableClass, FTransform(camRotation, camLocation)))
+//				{
+//					MulticastPlayThrowableTossFX(currentThrowable->ThrowableTossAnimation);
+//				}
+//			}
+//		}
+//	}
+//}
+//
 bool APlayerManager::CanUseThrowable() const
 {
 	return GetThrowable() != nullptr && GetThrowable()->ThrowableClass != nullptr;

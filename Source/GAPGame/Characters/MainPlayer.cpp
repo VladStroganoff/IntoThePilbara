@@ -1,34 +1,39 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Characters/MainPlayer.h"
+#include "Net/UnrealNetwork.h"
+#include "Camera/CameraComponent.h"
+#include "SurvyvalPlayerController.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/InventoryComponent.h"
+#include "Components/InteractionComponent.h"																								 
+#include "Items/EquippableItem.h"																											 
+#include "Items/WearItem.h"				
+#include "Items/WeaponItem.h"
+#include "Items/ThrowableItem.h"
+#include "Materials/MaterialInstance.h"																										 
+#include "World/Pickup.h"																													 
+#include "GameFramework/PlayerState.h"																										 
+#include "GameFramework/SpringArmComponent.h"																								 
+#include "GameFramework/CharacterMovementComponent.h"																						 
+#include "GameFramework/DamageType.h"																										 
+#include "Weapons/MeleeDamage.h"
+#include "Weapons/Weapon.h"
+#include "Weapons/ThrowableWeapon.h"
+#include "Kismet/GameplayStatics.h"
+#include "GAPGame.h"
 
-// Sets default values
+#define LOCTEXT_NAMESPACE "SurvivalCharacter"
+static FName NAME_AimDownSightsSocket("aimDownSightsSocket");
+
 AMainPlayer::AMainPlayer()
 {
- 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-}
-
-// Called when the game starts or when spawned
-void AMainPlayer::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
-// Called every frame
-void AMainPlayer::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 
 }
 
-// Called to bind functionality to input
-void AMainPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-}
+
 

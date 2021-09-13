@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Characters/PlayerInputComponent.h"
 #include "PlayerManager.generated.h"
 
 
@@ -60,6 +61,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Components")
 	class UCameraComponent* CameraComponent;
+
+	//UPROPERTY(EditAnywhere, Category = "Components")
+	class UPlayerInputComponent* InputComponent;
 
 	UPROPERTY(EditAnywhere, Category = "Components")
 	class USkeletalMeshComponent* HelmetMesh;
@@ -147,19 +151,23 @@ protected:
 
 	FTimerHandle _timerHandleInteract;
 
-	UFUNCTION(Server, Reliable)
-	void ServerUseThrowable();
-	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastPlayThrowableTossFX(class UAnimMontage* montageToPlay);
+	//UFUNCTION(Server, Reliable)
+	//void ServerUseThrowable();
+	//UFUNCTION(NetMulticast, Unreliable)
+	//void MulticastPlayThrowableTossFX(class UAnimMontage* montageToPlay);
 
-	class UThrowableItem* GetThrowable() const;
 	void UseThrowable();
-	void SpawnThrowable();
-	bool CanUseThrowable() const;
+	//void SpawnThrowable();
 
 public:
+	class UThrowableItem* GetThrowable() const;
+	bool CanUseThrowable() const;
 	bool IsInteracting();
 	float GetRemainingInteractTime();
+
+
+	UPROPERTY(VisibleAnywhere, Category = "Items")
+	TMap<EEquippableSlot, UEquippableItem*> EquippedItems;
 
 	UFUNCTION(BlueprintCallable, Category = "Items")
 	void UseItem(class UItem* item);
@@ -255,8 +263,6 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnDeath();
 
-	UPROPERTY(VisibleAnywhere, Category = "Items")
-	TMap<EEquippableSlot, UEquippableItem*> EquippedItems;
 
 	UPROPERTY(ReplicatedUsing = OnRep_Health, BlueprintReadOnly, Category = "Health")
 	float Heath;
