@@ -1,10 +1,10 @@
 
 #include "Weapon.h"
 
-#include "GAPGame.h"
+#include "GameLogic/GAPGame.h"
 
-#include "SurvyvalPlayerController.h"
-#include "PlayerManager.h"
+#include "Player/SurvyvalPlayerController.h"
+#include "Player/PlayerManager.h"
 #include "Components/AudioComponent.h"
 #include "Components/InventoryComponent.h"
 #include "Components/SkeletalMeshComponent.h"

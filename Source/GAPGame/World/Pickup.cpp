@@ -4,7 +4,7 @@
 #include "Pickup.h"
 #include "Items/Item.h"
 #include "Net/UnrealNetwork.h"
-#include "PlayerManager.h"
+#include "Player/PlayerManager.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/InteractionComponent.h"
 #include "Components/InventoryComponent.h"

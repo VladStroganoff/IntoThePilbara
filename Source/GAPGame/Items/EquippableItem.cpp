@@ -3,7 +3,7 @@
 
 #include "EquippableItem.h"
 #include "Net/UnrealNetwork.h"
-#include "PlayerManager.h"
+#include "Player/PlayerManager.h"
 #include "Components/InventoryComponent.h"
 
 #define LOCTEXT_NAMESPACE "EquippableItem"

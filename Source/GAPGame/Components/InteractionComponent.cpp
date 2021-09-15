@@ -2,7 +2,7 @@
 
 
 #include "InteractionComponent.h"
-#include "PlayerManager.h"
+#include "Player/PlayerManager.h"
 #include "Widgets/InteractionWidget.h"
 
 

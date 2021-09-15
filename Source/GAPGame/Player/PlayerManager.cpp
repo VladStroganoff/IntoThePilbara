@@ -4,7 +4,7 @@
 #include "PlayerManager.h"
 #include "Net/UnrealNetwork.h"
 #include "Camera/CameraComponent.h"
-#include "SurvyvalPlayerController.h"
+#include "Player/SurvyvalPlayerController.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InventoryComponent.h"
@@ -22,9 +22,8 @@
 #include "Weapons/MeleeDamage.h"
 #include "Weapons/Weapon.h"
 #include "Weapons/ThrowableWeapon.h"
-#include "Characters/PlayerInputComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "GAPGame.h"
+#include "GameLogic/GAPGame.h"
 
 #define LOCTEXT_NAMESPACE "SurvivalCharacter"
 static FName NAME_AimDownSightsSocket("aimDownSightsSocket");
@@ -44,10 +43,11 @@ APlayerManager::APlayerManager()
 	CameraComponent->SetupAttachment(SpringArmComponent);
 	CameraComponent->bUsePawnControlRotation = true;
 
-	InputComponent = CreateDefaultSubobject<UPlayerInputComponent>("InputComponent");
-	InputComponent->_playerManager = this;
+	PlayerMovement = CreateDefaultSubobject<UPlayerMovement>("Movement");
+	PlayerMovement->PlayerManager = this;
+	UE_LOG(LogTemp, Warning, TEXT("DID INJECT PLAYER MOVEMENT, %d"), PlayerMovement->PlayerManager);
 
-	
+
 	HelmetMesh = PlayerMeshes.Add(EEquippableSlot::EIS_Sensor, CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SensorMesh")));
 	TorsoMesh = PlayerMeshes.Add(EEquippableSlot::EIS_Torso, CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("TorsoMesh")));
 	RightArmMesh = PlayerMeshes.Add(EEquippableSlot::EIS_RightArm, CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("RightArmMesh")));
@@ -122,14 +122,14 @@ void APlayerManager::BeginPlay()
 //	UseThrowable();
 //}
 
-//void APlayerManager::MulticastPlayThrowableTossFX_Implementation(UAnimMontage* montageToPlay)
-//{
-//	if (GetNetMode() != NM_DedicatedServer && !IsLocallyControlled())
-//	{
-//		PlayAnimMontage(montageToPlay);
-//	}
-//}
-//
+void APlayerManager::MulticastPlayThrowableTossFX_Implementation(UAnimMontage* montageToPlay)
+{
+	if (GetNetMode() != NM_DedicatedServer && !IsLocallyControlled())
+	{
+		PlayAnimMontage(montageToPlay);
+	}
+}
+
 UThrowableItem * APlayerManager::GetThrowable() const
 {
 	UThrowableItem* equippedThrowable = nullptr;
@@ -141,65 +141,64 @@ UThrowableItem * APlayerManager::GetThrowable() const
 	return equippedThrowable;
 }
 
-void APlayerManager::UseThrowable()
-{
-	InputComponent->UseThrowable();
-	//if (CanUseThrowable())
-	//{
-	//	if (UThrowableItem* throwable = GetThrowable())
-	//	{
-	//		if (HasAuthority())
-	//		{
-	//			SpawnThrowable();
-	//				if (PlayerInventory)
-	//				{
-	//					PlayerInventory->ConsumeItem(throwable, 1);
-	//				}
-	//		}
-	//		else
-	//		{
-	//			if (throwable->GetQuantity() <= 1)
-	//			{
-	//				EquippedItems.Remove(EEquippableSlot::EIS_ThrowbleItem);
-	//				OnEquippedItemsChanged.Broadcast(EEquippableSlot::EIS_ThrowbleItem, nullptr);
-	//			}
-
-	//			PlayAnimMontage(throwable->ThrowableTossAnimation);
-	//			ServerUseThrowable();
-	//		}
-	//	}
-	//}
-}
-
-//void APlayerManager::SpawnThrowable()
+//void APlayerManager::UseThrowable()
 //{
-//	if (HasAuthority())
+//	if (CanUseThrowable())
 //	{
-//		if (UThrowableItem* currentThrowable = GetThrowable())
+//		if (UThrowableItem* throwable = GetThrowable())
 //		{
-//			if (currentThrowable->ThrowableClass)
+//			if (HasAuthority())
 //			{
-//				FActorSpawnParameters spawnParams;
-//				spawnParams.Owner = spawnParams.Instigator = this;
-//				spawnParams.bNoFail = true;
-//				spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-//
-//				FVector camLocation;
-//				FRotator camRotation;
-//
-//				GetController()->GetPlayerViewPoint(camLocation, camRotation);
-//
-//				camLocation = (camRotation.Vector()* 20.0f) + camLocation;
-//
-//				if (AThrowableWeapon* throwableWeapon = GetWorld()->SpawnActor<AThrowableWeapon>(currentThrowable->ThrowableClass, FTransform(camRotation, camLocation)))
+//				SpawnThrowable();
+//					if (PlayerInventory)
+//					{
+//						PlayerInventory->ConsumeItem(throwable, 1);
+//					}
+//			}
+//			else
+//			{
+//				if (throwable->GetQuantity() <= 1)
 //				{
-//					MulticastPlayThrowableTossFX(currentThrowable->ThrowableTossAnimation);
+//					EquippedItems.Remove(EEquippableSlot::EIS_ThrowbleItem);
+//					OnEquippedItemsChanged.Broadcast(EEquippableSlot::EIS_ThrowbleItem, nullptr);
 //				}
+//
+//				PlayAnimMontage(throwable->ThrowableTossAnimation);
+//				ServerUseThrowable();
 //			}
 //		}
 //	}
 //}
-//
+
+void APlayerManager::SpawnThrowable()
+{
+	if (HasAuthority())
+	{
+		if (UThrowableItem* currentThrowable = GetThrowable())
+		{
+			if (currentThrowable->ThrowableClass)
+			{
+				FActorSpawnParameters spawnParams;
+				spawnParams.Owner = spawnParams.Instigator = this;
+				spawnParams.bNoFail = true;
+				spawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+				FVector camLocation;
+				FRotator camRotation;
+
+				GetController()->GetPlayerViewPoint(camLocation, camRotation);
+
+				camLocation = (camRotation.Vector()* 20.0f) + camLocation;
+
+				if (AThrowableWeapon* throwableWeapon = GetWorld()->SpawnActor<AThrowableWeapon>(currentThrowable->ThrowableClass, FTransform(camRotation, camLocation)))
+				{
+					MulticastPlayThrowableTossFX(currentThrowable->ThrowableTossAnimation);
+				}
+			}
+		}
+	}
+}
+
 bool APlayerManager::CanUseThrowable() const
 {
 	return GetThrowable() != nullptr && GetThrowable()->ThrowableClass != nullptr;
@@ -421,25 +420,25 @@ void APlayerManager::OnRep_EquippedWeapon()
 	}
 }
 
-void APlayerManager::StartFire()
-{
-	if (EquippedWeapon)
-	{
-		EquippedWeapon->StartFire();
-	}
-	else
-	{
-		BeginMeleeAttack();
-	}
-}
-
-void APlayerManager::StopFire()
-{
-	if (EquippedWeapon)
-	{
-		EquippedWeapon->StopFire();
-	}
-}
+//void APlayerManager::StartFire()
+//{
+//	if (EquippedWeapon)
+//	{
+//		EquippedWeapon->StartFire();
+//	}
+//	else
+//	{
+//		BeginMeleeAttack();
+//	}
+//}
+//
+//void APlayerManager::StopFire()
+//{
+//	if (EquippedWeapon)
+//	{
+//		EquippedWeapon->StopFire();
+//	}
+//}
 
 void APlayerManager::BeginMeleeAttack()
 {
@@ -549,120 +548,120 @@ bool APlayerManager::CanSprint()
 	return !IsAiming();
 }
 
-void APlayerManager::StartSprinting()
-{
-	SetSprinting(true);
-}
+//void APlayerManager::StartSprinting()
+//{
+//	SetSprinting(true);
+//}
+//
+//void APlayerManager::StopSprinting()
+//{
+//	SetSprinting(false);
+//}
+//
+//void APlayerManager::SetSprinting(const bool bNewSprinting)
+//{
+//	if ((bNewSprinting && !CanSprint()) || bNewSprinting == bSprinting)
+//	{
+//		return;
+//	}
+//
+//	if (GetLocalRole() < ROLE_Authority)
+//	{
+//		ServerSetSprinting(bNewSprinting);
+//	}
+//
+//	bSprinting = bNewSprinting;
+//
+//	GetCharacterMovement()->MaxWalkSpeed = bSprinting ? SprintSpeed : WalkSpeed;
+//}
+//
+//void APlayerManager::ServerSetSprinting_Implementation(const bool bNewSprinting)
+//{
+//	SetSprinting(bNewSprinting);
+//}
+//
+//bool APlayerManager::ServerSetSprinting_Validate(const bool bNewSprinting)
+//{
+//	return true;
+//}
 
-void APlayerManager::StopSprinting()
-{
-	SetSprinting(false);
-}
+//void APlayerManager::StartCrouching()
+//{
+//	Crouch();
+//}
+//
+//void APlayerManager::StopCrouching()
+//{
+//	UnCrouch();
+//}
+//
+//void APlayerManager::MoveForward(float val)
+//{
+//	if (val == 0)
+//		return;
+//
+//	AddMovementInput(GetActorForwardVector(), val);
+//
+//}
+//
+//void APlayerManager::MoveRight(float val)
+//{
+//	if (val == 0)
+//		return;
+//
+//	AddMovementInput(GetActorRightVector(), val);
+//}
+//
+//void APlayerManager::LookUp(float val)
+//{
+//	if (val == 0)
+//		return;
+//
+//	AddControllerPitchInput(val);
+//}
+//
+//void APlayerManager::Turn(float val)
+//{
+//	if (val == 0)
+//		return;
+//	AddControllerYawInput(val);
+//}
 
-void APlayerManager::SetSprinting(const bool bNewSprinting)
-{
-	if ((bNewSprinting && !CanSprint()) || bNewSprinting == bSprinting)
-	{
-		return;
-	}
+//bool APlayerManager::CanAim()
+//{
+//	return EquippedWeapon != nullptr;
+//}
 
-	if (GetLocalRole() < ROLE_Authority)
-	{
-		ServerSetSprinting(bNewSprinting);
-	}
-
-	bSprinting = bNewSprinting;
-
-	GetCharacterMovement()->MaxWalkSpeed = bSprinting ? SprintSpeed : WalkSpeed;
-}
-
-void APlayerManager::ServerSetSprinting_Implementation(const bool bNewSprinting)
-{
-	SetSprinting(bNewSprinting);
-}
-
-bool APlayerManager::ServerSetSprinting_Validate(const bool bNewSprinting)
-{
-	return true;
-}
-
-void APlayerManager::StartCrouching()
-{
-	Crouch();
-}
-
-void APlayerManager::StopCrouching()
-{
-	UnCrouch();
-}
-
-void APlayerManager::MoveForward(float val)
-{
-	if (val == 0)
-		return;
-
-	AddMovementInput(GetActorForwardVector(), val);
-
-}
-
-void APlayerManager::MoveRight(float val)
-{
-	if (val == 0)
-		return;
-
-	AddMovementInput(GetActorRightVector(), val);
-}
-
-void APlayerManager::LookUp(float val)
-{
-	if (val == 0)
-		return;
-
-	AddControllerPitchInput(val);
-}
-
-void APlayerManager::Turn(float val)
-{
-	if (val == 0)
-		return;
-	AddControllerYawInput(val);
-}
-
-bool APlayerManager::CanAim()
-{
-	return EquippedWeapon != nullptr;
-}
-
-void APlayerManager::StartAiming()
-{
-	if (CanAim())
-	{
-		SetAiming(true);
-	}
-}
-
-void APlayerManager::StopAiming()
-{
-	SetAiming(false);
-}
-
-void APlayerManager::SetAiming(const bool bNewAiming)
-{
-	if (bNewAiming && !CanAim() || bNewAiming == bIsAiming)
-		return;
-
-	if (GetLocalRole() < ROLE_Authority)
-	{
-		ServerSetAiming(bNewAiming);
-	}
-
-	bIsAiming = bNewAiming;
-}
-
-void APlayerManager::ServerSetAiming_Implementation(const bool bNewAiming)
-{
-	SetAiming(bNewAiming);
-}
+//void APlayerManager::StartAiming()
+//{
+//	if (CanAim())
+//	{
+//		SetAiming(true);
+//	}
+//}
+//
+//void APlayerManager::StopAiming()
+//{
+//	SetAiming(false);
+//}
+//
+//void APlayerManager::SetAiming(const bool bNewAiming)
+//{
+//	if (bNewAiming && !CanAim() || bNewAiming == bIsAiming)
+//		return;
+//
+//	if (GetLocalRole() < ROLE_Authority)
+//	{
+//		ServerSetAiming(bNewAiming);
+//	}
+//
+//	bIsAiming = bNewAiming;
+//}
+//
+//void APlayerManager::ServerSetAiming_Implementation(const bool bNewAiming)
+//{
+//	SetAiming(bNewAiming);
+//}
 
 void APlayerManager::StartReload()
 {
@@ -820,49 +819,49 @@ void APlayerManager::FoundInteractable(UInteractionComponent * interactable)
 	interactable->BeginFocus(this);
 }
 
-void APlayerManager::BeginInteract()
-{
-	if (!HasAuthority())
-	{
-		ServerBeginInteract();
-	}
-
-	if(HasAuthority())
-	{
-		PreformInteractionCheck();
-	}
-
-	InteractionData.bInteractHeld = true;
-
-	if (UInteractionComponent* Interactable = GetInteractable())
-	{
-		Interactable->BeginInteract(this);
-		if (FMath::IsNearlyZero(Interactable->InteractionTime))
-		{
-			Interact();
-		}
-		else
-		{
-			GetWorldTimerManager().SetTimer(_timerHandleInteract, this, &APlayerManager::Interact, Interactable->InteractionTime, false);
-		}
-	}
-}
-
-void APlayerManager::EndInteract()
-{
-	if (!HasAuthority())
-		ServerEndInteract();
-
-	InteractionData.bInteractHeld = false;
-
-	GetWorldTimerManager().ClearTimer(_timerHandleInteract);
-
-	if (UInteractionComponent* Interactable = GetInteractable())
-	{
-		Interactable->EndInteract(this);
-	}
-
-}
+//void APlayerManager::BeginInteract()
+//{
+//	if (!HasAuthority())
+//	{
+//		ServerBeginInteract();
+//	}
+//
+//	if(HasAuthority())
+//	{
+//		PreformInteractionCheck();
+//	}
+//
+//	InteractionData.bInteractHeld = true;
+//
+//	if (UInteractionComponent* Interactable = GetInteractable())
+//	{
+//		Interactable->BeginInteract(this);
+//		if (FMath::IsNearlyZero(Interactable->InteractionTime))
+//		{
+//			Interact();
+//		}
+//		else
+//		{
+//			GetWorldTimerManager().SetTimer(_timerHandleInteract, this, &APlayerManager::Interact, Interactable->InteractionTime, false);
+//		}
+//	}
+//}
+//
+//void APlayerManager::EndInteract()
+//{
+//	if (!HasAuthority())
+//		ServerEndInteract();
+//
+//	InteractionData.bInteractHeld = false;
+//
+//	GetWorldTimerManager().ClearTimer(_timerHandleInteract);
+//
+//	if (UInteractionComponent* Interactable = GetInteractable())
+//	{
+//		Interactable->EndInteract(this);
+//	}
+//
+//}
 
 void APlayerManager::Interact()
 {
@@ -896,7 +895,9 @@ bool APlayerManager::ServerEndInteract_Validate()
 // Called to bind functionality to input
 void APlayerManager::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	PlayerInputComponent->SetuInput(PlayerInputComponent)
+
+	/*Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerManager::StartFire);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerManager::StopFire);
@@ -918,7 +919,7 @@ void APlayerManager::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &APlayerManager::StopSprinting);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &APlayerManager::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerManager::MoveRight);
+	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerManager::MoveRight);*/
 }
 
 void APlayerManager::OnLootSourceOwnerDestroyed(AActor * destroyedActor)
@@ -933,13 +934,13 @@ void APlayerManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(APlayerManager, bSprinting);
+	//DOREPLIFETIME(APlayerManager, bSprinting);
 	DOREPLIFETIME(APlayerManager, LootSource);
 	DOREPLIFETIME(APlayerManager, EquippedWeapon);
 	DOREPLIFETIME(APlayerManager, Killer);
 
 	DOREPLIFETIME_CONDITION(APlayerManager, Heath, COND_OwnerOnly); // will only replicate to the same client
-	DOREPLIFETIME_CONDITION(APlayerManager, bIsAiming, COND_SkipOwner);
+	//DOREPLIFETIME_CONDITION(APlayerManager, bIsAiming, COND_SkipOwner);
 }
 
 void APlayerManager::OnRep_LootSource()

@@ -1,7 +1,7 @@
 // Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
 
 #include "GAPGameGameMode.h"
-#include "GAPGameCharacter.h"
+#include "Player/GAPGameCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 
 AGAPGameGameMode::AGAPGameGameMode()

@@ -2,8 +2,8 @@
 
 
 #include "WeaponItem.h"
-#include "SurvyvalPlayerController.h"
-#include "PlayerManager.h"
+#include "Player/SurvyvalPlayerController.h"
+#include "Player/PlayerManager.h"
 
 
 UWeaponItem::UWeaponItem()

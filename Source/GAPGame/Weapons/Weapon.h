@@ -103,7 +103,8 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = Components)
 	USkeletalMeshComponent* WeaponMesh;
-
+	virtual void StartFire();
+	virtual void StopFire();
 
 protected:
 
@@ -117,8 +118,7 @@ protected:
 	bool IsEquipped() const;
 	bool IsAttachedToPawn() const;
 
-	virtual void StartFire();
-	virtual void StopFire();
+
 
 	virtual void StartReload( bool bFromReplication = false);
 	virtual void StopReload();

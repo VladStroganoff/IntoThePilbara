@@ -9,7 +9,7 @@
 #include "Items/EquippableItem.h"
 #include "World/ItemSpawn.h"
 #include "Items/Item.h"
-#include "PlayerManager.h"
+#include "Player/PlayerManager.h"
 
 #define LOCTEXT_NAMESPACE "LootableActor"
 

@@ -3,8 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/PlayerMovement.h"
+#include "Items/EquippableItem.h"
 #include "GameFramework/Character.h"
-#include "Characters/PlayerInputComponent.h"
 #include "PlayerManager.generated.h"
 
 
@@ -44,10 +45,10 @@ public:
 	// Sets default values for this character's properties
 	APlayerManager();
 
-	//UPROPERTY(BlueprintReadOnly, Category = Mesh)
+	UPROPERTY(BlueprintReadOnly, Category = Mesh)
 	TMap<EEquippableSlot, USkeletalMesh*> NakedMeshes;
 
-	//UPROPERTY(BlueprintReadOnly, Category = Mesh)
+	UPROPERTY(BlueprintReadOnly, Category = Mesh)
 	TMap<EEquippableSlot, USkeletalMeshComponent*> PlayerMeshes;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
@@ -62,8 +63,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Components")
 	class UCameraComponent* CameraComponent;
 
-	//UPROPERTY(EditAnywhere, Category = "Components")
-	class UPlayerInputComponent* InputComponent;
+	UPROPERTY(BlueprintReadOnly, Category = Mesh)
+	class UPlayerMovement* PlayerMovement;
 
 	UPROPERTY(EditAnywhere, Category = "Components")
 	class USkeletalMeshComponent* HelmetMesh;
@@ -94,6 +95,11 @@ public:
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerLootItem(class UItem* itemToLoot);
+
+	UPROPERTY()
+	FInteractionData InteractionData;
+	void PreformInteractionCheck();
+
 
 protected:
 	
@@ -127,37 +133,32 @@ protected:
 	float InteractionCheckDistence;
 
 
-	void PreformInteractionCheck();
-
 	void CouldNotFindInteractable();
 	void FoundInteractable(UInteractionComponent* Interactable);
 
-	void BeginInteract();
-	void EndInteract();
+	//void BeginInteract();
+	//void EndInteract();
 
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerBeginInteract();
+	//UFUNCTION(Server, Reliable, WithValidation)
+	//void ServerBeginInteract();
 
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerEndInteract();
+	//UFUNCTION(Server, Reliable, WithValidation)
+	//void ServerEndInteract();
+
 
 	void Interact();
-
-	UPROPERTY()
-	FInteractionData InteractionData;
-
 
 	FORCEINLINE class UInteractionComponent* GetInteractable() const { return InteractionData.ViewedInteractionComponent; }
 
 	FTimerHandle _timerHandleInteract;
 
-	//UFUNCTION(Server, Reliable)
-	//void ServerUseThrowable();
-	//UFUNCTION(NetMulticast, Unreliable)
-	//void MulticastPlayThrowableTossFX(class UAnimMontage* montageToPlay);
+	UFUNCTION(Server, Reliable)
+	void ServerUseThrowable();
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastPlayThrowableTossFX(class UAnimMontage* montageToPlay);
 
-	void UseThrowable();
-	//void SpawnThrowable();
+	//void UseThrowable();
+	void SpawnThrowable();
 
 public:
 	class UThrowableItem* GetThrowable() const;
@@ -215,19 +216,21 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnHealthModified(const float healthDelta);
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing = OnRep_EquippedWeapon)
+	class AWeapon* EquippedWeapon;
+	void BeginMeleeAttack();
 
 protected:
 
-	UPROPERTY(VisibleAnywhere, ReplicatedUsing = OnRep_EquippedWeapon)
-	class AWeapon* EquippedWeapon;
+
 
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
 
-	void StartFire();
-	void StopFire();
+	//void StartFire();
+	//void StopFire();
 
-	void BeginMeleeAttack();
+
 
 	UFUNCTION(Server, Reliable)
 	void ServerProcessMeleeHit(const FHitResult& meleeHit);
@@ -276,18 +279,18 @@ protected:
 	UPROPERTY()
 	float WalkSpeed;
 
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = Movement)
-	bool bSprinting;
+	//UPROPERTY(Replicated, BlueprintReadOnly, Category = Movement)
+	//bool bSprinting;
 
 	bool CanSprint();
 
-	void StartSprinting();
-	void StopSprinting();
+	//void StartSprinting();
+	//void StopSprinting();
 
-	void SetSprinting(const bool bNewSprinting);
+	//void SetSprinting(const bool bNewSprinting);
 
-	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerSetSprinting(const bool bNewSprinting);
+	//UFUNCTION(Server, Reliable, WithValidation)
+	//void ServerSetSprinting(const bool bNewSprinting);
 
 
 	void StartCrouching();
@@ -297,18 +300,18 @@ protected:
 	void LookUp(float val);
 	void Turn(float val);
 
-	bool CanAim();
+	//bool CanAim();
 
-	void StartAiming();
-	void StopAiming();
+	//void StartAiming();
+	//void StopAiming();
 
 	void SetAiming(const bool bNewAiming);
 
 	UFUNCTION(Server, Reliable)
 	void ServerSetAiming(const bool bNewAiming);
 
-	UPROPERTY(Transient, Replicated)
-	bool bIsAiming;
+	//UPROPERTY(Transient, Replicated)
+	//bool bIsAiming;
 
 public:
 
@@ -318,8 +321,8 @@ public:
 	FORCEINLINE bool IsAlive() const { return Killer == nullptr; };
 
 
-	UFUNCTION(BlueprintPure, Category = "Weapons")
-	FORCEINLINE bool IsAiming() const { return bIsAiming; }
+	//UFUNCTION(BlueprintPure, Category = "Weapons")
+	//FORCEINLINE bool IsAiming() const { return bIsAiming; }
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
