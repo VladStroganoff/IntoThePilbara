@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/PlayerMovement.h"
+#include "Components/PlayerMovement.h"
 #include "Items/EquippableItem.h"
 #include "GameFramework/Character.h"
 #include "PlayerManager.generated.h"
@@ -13,7 +14,6 @@ USTRUCT()
 struct FInteractionData
 {
 	GENERATED_BODY()
-
 
 		FInteractionData()
 	{
@@ -42,6 +42,8 @@ class GAPGAME_API APlayerManager : public ACharacter
 	GENERATED_BODY()
 
 public:
+	friend class UPlayerMovement;
+
 	// Sets default values for this character's properties
 	APlayerManager();
 
@@ -99,6 +101,11 @@ public:
 	UPROPERTY()
 	FInteractionData InteractionData;
 	void PreformInteractionCheck();
+	FORCEINLINE class UInteractionComponent* GetInteractable() const { return InteractionData.ViewedInteractionComponent; }
+	void FoundInteractable(UInteractionComponent* Interactable);
+	void Interact();
+	FTimerHandle _timerHandleInteract;
+
 
 
 protected:
@@ -134,7 +141,6 @@ protected:
 
 
 	void CouldNotFindInteractable();
-	void FoundInteractable(UInteractionComponent* Interactable);
 
 	//void BeginInteract();
 	//void EndInteract();
@@ -146,11 +152,8 @@ protected:
 	//void ServerEndInteract();
 
 
-	void Interact();
 
-	FORCEINLINE class UInteractionComponent* GetInteractable() const { return InteractionData.ViewedInteractionComponent; }
 
-	FTimerHandle _timerHandleInteract;
 
 	UFUNCTION(Server, Reliable)
 	void ServerUseThrowable();
@@ -161,6 +164,7 @@ protected:
 	void SpawnThrowable();
 
 public:
+
 	class UThrowableItem* GetThrowable() const;
 	bool CanUseThrowable() const;
 	bool IsInteracting();
@@ -223,6 +227,8 @@ public:
 protected:
 
 
+	bool CheckAuthority();
+	int CheckRole();
 
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
@@ -273,16 +279,16 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Health")
 	float MaxHealth;
 
-	UPROPERTY(EditDefaultsOnly, Category = Movement)
-	float SprintSpeed;
+	//UPROPERTY(EditDefaultsOnly, Category = Movement)
+	//float SprintSpeed;
 
-	UPROPERTY()
-	float WalkSpeed;
+	//UPROPERTY()
+	//float WalkSpeed;
 
 	//UPROPERTY(Replicated, BlueprintReadOnly, Category = Movement)
 	//bool bSprinting;
 
-	bool CanSprint();
+	//bool CanSprint();
 
 	//void StartSprinting();
 	//void StopSprinting();
@@ -293,12 +299,12 @@ protected:
 	//void ServerSetSprinting(const bool bNewSprinting);
 
 
-	void StartCrouching();
-	void StopCrouching();
-	void MoveForward(float val);
-	void MoveRight(float val);
-	void LookUp(float val);
-	void Turn(float val);
+	//void StartCrouching();
+	//void StopCrouching();
+	//void MoveForward(float val);
+	//void MoveRight(float val);
+	//void LookUp(float val);
+	//void Turn(float val);
 
 	//bool CanAim();
 

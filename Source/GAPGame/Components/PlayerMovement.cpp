@@ -1,5 +1,6 @@
 
 #include "Net/UnrealNetwork.h"
+#include "Components/InteractionComponent.h"	
 #include "Weapons/Weapon.h"
 #include "Components/PlayerMovement.h"
 #include "PlayerMovement.h"
@@ -7,6 +8,7 @@
 UPlayerMovement::UPlayerMovement()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+
 }
 
 
@@ -49,6 +51,13 @@ void UPlayerMovement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 
 	DOREPLIFETIME(UPlayerMovement, bSprinting);
 	DOREPLIFETIME_CONDITION(UPlayerMovement, bIsAiming, COND_SkipOwner);
+}
+
+void UPlayerMovement::Inject(APlayerManager* playerManager)
+{
+	PlayerManager = playerManager;
+	SprintSpeed = PlayerManager.GetCharacterMovement()->MaxWalkSpeed * 2.f;
+	WalkSpeed = PlayerManager.GetCharacterMovement()->MaxWalkSpeed;
 }
 
 void UPlayerMovement::StartCrouching()
@@ -115,9 +124,10 @@ void UPlayerMovement::StopFire()
 
 void UPlayerMovement::BeginInteract()
 {
-	if (PlayerManager->!HasAuthority())
+
+	if (!PlayerManager->CheckAuthority())
 	{
-		PlayerManager->ServerBeginInteract();
+		ServerBeginInteract();
 	}
 
 	if (PlayerManager->HasAuthority())
@@ -127,32 +137,42 @@ void UPlayerMovement::BeginInteract()
 
 	PlayerManager->InteractionData.bInteractHeld = true;
 
-	if (UInteractionComponent* Interactable = GetInteractable())
+	if (UInteractionComponent* Interactable = PlayerManager->GetInteractable())
 	{
-		PlayerManager->Interactable->BeginInteract(this);
+		Interactable->BeginInteract(PlayerManager);
 		if (FMath::IsNearlyZero(Interactable->InteractionTime))
 		{
-			Interact();
+			PlayerManager->Interact();
 		}
 		else
 		{
-			GetWorldTimerManager().SetTimer(_timerHandleInteract, this, &APlayerManager::Interact, Interactable->InteractionTime, false);
+			PlayerManager->GetWorldTimerManager().SetTimer(PlayerManager->_timerHandleInteract, PlayerManager, &APlayerManager::Interact, Interactable->InteractionTime, false);
 		}
 	}
 }
 
+void UPlayerMovement::ServerBeginInteract_Implementation()
+{
+	BeginInteract();
+}
+
+bool UPlayerMovement::ServerBeginInteract_Validate()
+{
+	return true;
+}
+
 void UPlayerMovement::EndInteract()
 {
-	if (!HasAuthority())
+	if (!PlayerManager->CheckAuthority())
 		ServerEndInteract();
 
-	InteractionData.bInteractHeld = false;
+	PlayerManager->InteractionData.bInteractHeld = false;
 
-	GetWorldTimerManager().ClearTimer(_timerHandleInteract);
+	PlayerManager->GetWorldTimerManager().ClearTimer(PlayerManager->_timerHandleInteract);
 
-	if (UInteractionComponent* Interactable = GetInteractable())
+	if (UInteractionComponent* Interactable = PlayerManager->GetInteractable())
 	{
-		Interactable->EndInteract(this);
+		Interactable->EndInteract(PlayerManager);
 	}
 
 }
@@ -184,14 +204,14 @@ void UPlayerMovement::SetSprinting(const bool bNewSprinting)
 		return;
 	}
 
-	if (GetLocalRole() < ROLE_Authority)
+	if (PlayerManager->CheckRole() < ROLE_Authority)
 	{
 		ServerSetSprinting(bNewSprinting);
 	}
 
 	bSprinting = bNewSprinting;
 
-	PlayerManager->GetCharacterMovement()->MaxWalkSpeed = bSprinting ? SprintSpeed : WalkSpeed;
+	PlayerManager.GetCharacterMovement()->MaxWalkSpeed = bSprinting ? SprintSpeed : WalkSpeed;
 }
 
 void UPlayerMovement::ServerSetSprinting_Implementation(const bool bNewSprinting)
@@ -238,6 +258,12 @@ void UPlayerMovement::ServerSetAiming_Implementation(const bool bNewAiming)
 bool UPlayerMovement::CanAim()
 {
 	return PlayerManager->EquippedWeapon != nullptr;
+}
+
+
+bool APlayerManager::CanSprint()
+{
+	return !IsAiming();
 }
 
 void UPlayerMovement::UseThrowable()

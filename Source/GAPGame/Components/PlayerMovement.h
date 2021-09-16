@@ -20,6 +20,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Managers")
 	class APlayerManager* PlayerManager;
 
+	void Inject(APlayerManager* playerManager);
+
 	void StartCrouching();
 	void StopCrouching();
 	void MoveForward(float val);
@@ -58,6 +60,14 @@ public:
 
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = Movement)
 	bool bSprinting;
+
+	bool CanSprint();
+
+	UPROPERTY(EditDefaultsOnly, Category = Movement)
+	float SprintSpeed;
+
+	UPROPERTY()
+	float WalkSpeed;
 
 	void SetSprinting(const bool bNewSprinting);
 

@@ -44,7 +44,7 @@ APlayerManager::APlayerManager()
 	CameraComponent->bUsePawnControlRotation = true;
 
 	PlayerMovement = CreateDefaultSubobject<UPlayerMovement>("Movement");
-	PlayerMovement->PlayerManager = this;
+	PlayerMovement->Inject(this);
 	UE_LOG(LogTemp, Warning, TEXT("DID INJECT PLAYER MOVEMENT, %d"), PlayerMovement->PlayerManager);
 
 
@@ -83,13 +83,13 @@ APlayerManager::APlayerManager()
 	MeleeAttackDistance = 150.f;
 	MeleeAttackDamage = 20.f;
 
-	SprintSpeed = GetCharacterMovement()->MaxWalkSpeed * 2.f;
-	WalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
+	//SprintSpeed = GetCharacterMovement()->MaxWalkSpeed * 2.f;
+	//WalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 
 	MaxHealth = 100.0f;
 	Heath = MaxHealth;
 
-	bIsAiming = false;
+	//bIsAiming = false;
 	GetMesh()->SetOwnerNoSee(true);
 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
@@ -542,11 +542,11 @@ void APlayerManager::OnRep_Killer()
 		}
 	}
 }
-
-bool APlayerManager::CanSprint()
-{
-	return !IsAiming();
-}
+//
+//bool APlayerManager::CanSprint()
+//{
+//	return !IsAiming();
+//}
 
 //void APlayerManager::StartSprinting()
 //{
@@ -863,6 +863,16 @@ void APlayerManager::FoundInteractable(UInteractionComponent * interactable)
 //
 //}
 
+bool APlayerManager::CheckAuthority()
+{
+	return HasAuthority();
+}
+
+int APlayerManager::CheckRole()
+{
+	return GetLocalRole();
+}
+
 void APlayerManager::Interact()
 {
 	GetWorldTimerManager().ClearTimer(_timerHandleInteract);
@@ -872,15 +882,15 @@ void APlayerManager::Interact()
 
 }
 
-void APlayerManager::ServerBeginInteract_Implementation()
-{
-	BeginInteract();
-}
-
-bool APlayerManager::ServerBeginInteract_Validate()
-{
-	return true;
-}
+//void APlayerManager::ServerBeginInteract_Implementation()
+//{
+//	BeginInteract();
+//}
+//
+//bool APlayerManager::ServerBeginInteract_Validate()
+//{
+//	return true;
+//}
 
 void APlayerManager::ServerEndInteract_Implementation()
 {
