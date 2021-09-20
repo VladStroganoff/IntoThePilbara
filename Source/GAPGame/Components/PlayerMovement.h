@@ -21,6 +21,7 @@ public:
 	class APlayerManager* PlayerManager;
 
 	void Inject(APlayerManager* playerManager);
+	void SetuInput(UInputComponent* PlayerInputComponent);
 
 	void StartCrouching();
 	void StopCrouching();
@@ -56,7 +57,15 @@ public:
 	void StartAiming();
 	void StopAiming();
 
+	void SetAiming(const bool bNewAiming);
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetAiming(const bool bNewAiming);
+
 	void UseThrowable();
+
+	UFUNCTION(Server, Reliable)
+	void ServerUseThrowable();
 
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = Movement)
 	bool bSprinting;
@@ -74,7 +83,6 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerSetSprinting(const bool bNewSprinting);
 
-	void SetuInput(class UInputComponent* PlayerInputComponent);
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:

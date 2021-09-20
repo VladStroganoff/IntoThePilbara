@@ -2,6 +2,10 @@
 #include "Net/UnrealNetwork.h"
 #include "Components/InteractionComponent.h"	
 #include "Weapons/Weapon.h"
+#include "Components/InventoryComponent.h"
+#include "Items/ThrowableItem.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"	
 #include "Components/PlayerMovement.h"
 #include "PlayerMovement.h"
 
@@ -56,8 +60,8 @@ void UPlayerMovement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 void UPlayerMovement::Inject(APlayerManager* playerManager)
 {
 	PlayerManager = playerManager;
-	SprintSpeed = PlayerManager.GetCharacterMovement()->MaxWalkSpeed * 2.f;
-	WalkSpeed = PlayerManager.GetCharacterMovement()->MaxWalkSpeed;
+	SprintSpeed = PlayerManager->GetCharacterMovement()->MaxWalkSpeed * 2.f;
+	WalkSpeed = PlayerManager->GetCharacterMovement()->MaxWalkSpeed;
 }
 
 void UPlayerMovement::StartCrouching()
@@ -177,6 +181,16 @@ void UPlayerMovement::EndInteract()
 
 }
 
+void UPlayerMovement::ServerEndInteract_Implementation()
+{
+	EndInteract();
+}
+
+bool UPlayerMovement::ServerEndInteract_Validate()
+{
+	return true;
+}
+
 void UPlayerMovement::StartSprinting()
 {
 	SetSprinting(true);
@@ -211,7 +225,7 @@ void UPlayerMovement::SetSprinting(const bool bNewSprinting)
 
 	bSprinting = bNewSprinting;
 
-	PlayerManager.GetCharacterMovement()->MaxWalkSpeed = bSprinting ? SprintSpeed : WalkSpeed;
+	PlayerManager->GetCharacterMovement()->MaxWalkSpeed = bSprinting ? SprintSpeed : WalkSpeed;
 }
 
 void UPlayerMovement::ServerSetSprinting_Implementation(const bool bNewSprinting)
@@ -242,7 +256,7 @@ void UPlayerMovement::SetAiming(const bool bNewAiming)
 	if (bNewAiming && !CanAim() || bNewAiming == bIsAiming)
 		return;
 
-	if (GetLocalRole() < ROLE_Authority)
+	if (PlayerManager->GetLocalRole() < ROLE_Authority)
 	{
 		ServerSetAiming(bNewAiming);
 	}
@@ -261,39 +275,42 @@ bool UPlayerMovement::CanAim()
 }
 
 
-bool APlayerManager::CanSprint()
+bool UPlayerMovement::CanSprint()
 {
 	return !IsAiming();
 }
 
 void UPlayerMovement::UseThrowable()
 {
-	if (CanUseThrowable())
+	if (PlayerManager->CanUseThrowable())
 	{
-		if (UThrowableItem* throwable = GetThrowable())
+		if (UThrowableItem * throwable = PlayerManager->GetThrowable())
 		{
-			if (HasAuthority())
+			if (PlayerManager->HasAuthority())
 			{
-				SpawnThrowable();
-				if (PlayerInventory)
+				PlayerManager->SpawnThrowable();
+				if (PlayerManager->PlayerInventory)
 				{
-					PlayerInventory->ConsumeItem(throwable, 1);
+					//UItem* pb = dynamic_cast<UItem*>(&throwable);
+					PlayerManager->PlayerInventory->ConsumeItem(throwable, 1);
 				}
 			}
 			else
 			{
 				if (throwable->GetQuantity() <= 1)
 				{
-					EquippedItems.Remove(EEquippableSlot::EIS_ThrowbleItem);
-					OnEquippedItemsChanged.Broadcast(EEquippableSlot::EIS_ThrowbleItem, nullptr);
+					PlayerManager->EquippedItems.Remove(EEquippableSlot::EIS_ThrowbleItem);
+					PlayerManager->OnEquippedItemsChanged.Broadcast(EEquippableSlot::EIS_ThrowbleItem, nullptr);
 				}
 
-				PlayAnimMontage(throwable->ThrowableTossAnimation);
+				PlayerManager->PlayAnimMontage(throwable->ThrowableTossAnimation);
 				ServerUseThrowable();
 			}
 		}
 	}
 }
+
+
 
 void UPlayerMovement::ServerUseThrowable_Implementation()
 {

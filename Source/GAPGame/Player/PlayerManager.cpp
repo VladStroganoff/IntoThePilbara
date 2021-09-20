@@ -140,7 +140,7 @@ UThrowableItem * APlayerManager::GetThrowable() const
 
 	return equippedThrowable;
 }
-
+//
 //void APlayerManager::UseThrowable()
 //{
 //	if (CanUseThrowable())
@@ -685,7 +685,7 @@ void APlayerManager::Tick(float DeltaTime)
 
 	if (IsLocallyControlled())
 	{
-		const float desieredFOV = IsAiming() ? 70.0f : 100.0f; // move these values to to the weapon class?
+		const float desieredFOV = PlayerMovement->IsAiming() ? 70.0f : 100.0f; // move these values to to the weapon class?
 		CameraComponent->SetFieldOfView(FMath::FInterpTo(CameraComponent->FieldOfView, desieredFOV, DeltaTime, 10.0f));
 
 		if (EquippedWeapon)
@@ -693,7 +693,7 @@ void APlayerManager::Tick(float DeltaTime)
 			const FVector aimDownSightLocation = EquippedWeapon->GetWeaponMesh()->GetSocketLocation(NAME_AimDownSightsSocket);
 			const FVector defaultCameraLocation = GetMesh()->GetSocketLocation(FName("CameraSocket"));
 
-			FVector cameraLocation = bIsAiming ? aimDownSightLocation : defaultCameraLocation;
+			FVector cameraLocation = PlayerMovement->bIsAiming ? aimDownSightLocation : defaultCameraLocation;
 
 			const float interpSpeed = FVector::Dist(aimDownSightLocation, defaultCameraLocation) / EquippedWeapon->AimDownSightTime;
 			CameraComponent->SetWorldLocation(FMath::VInterpTo(CameraComponent->GetComponentLocation(), cameraLocation, DeltaTime, interpSpeed));
@@ -799,7 +799,7 @@ void APlayerManager::CouldNotFindInteractable()
 
 		if (InteractionData.bInteractHeld)
 		{
-			EndInteract();
+			PlayerMovement->EndInteract();
 		}
 	}
 
@@ -809,7 +809,7 @@ void APlayerManager::CouldNotFindInteractable()
 
 void APlayerManager::FoundInteractable(UInteractionComponent * interactable)
 {
-	EndInteract();
+	PlayerMovement->EndInteract();
 	if (UInteractionComponent* OldInteractable = GetInteractable())
 	{
 		OldInteractable->EndFocus(this);
@@ -892,15 +892,15 @@ void APlayerManager::Interact()
 //	return true;
 //}
 
-void APlayerManager::ServerEndInteract_Implementation()
-{
-	EndInteract();
-}
-
-bool APlayerManager::ServerEndInteract_Validate()
-{
-	return true;
-}
+//void APlayerManager::ServerEndInteract_Implementation()
+//{
+//	PlayerMovement->EndInteract();
+//}
+//
+//bool APlayerManager::ServerEndInteract_Validate()
+//{
+//	return true;
+//}
 
 // Called to bind functionality to input
 void APlayerManager::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

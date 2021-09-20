@@ -155,8 +155,8 @@ protected:
 
 
 
-	UFUNCTION(Server, Reliable)
-	void ServerUseThrowable();
+	//UFUNCTION(Server, Reliable)
+	//void ServerUseThrowable();
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastPlayThrowableTossFX(class UAnimMontage* montageToPlay);
 
