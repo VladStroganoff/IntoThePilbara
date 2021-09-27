@@ -49,10 +49,11 @@ public:
 	void StopSprinting();
 
 	bool CanAim();
-	UPROPERTY(Transient, Replicated)
-	bool bIsAiming;
+	//UPROPERTY(Transient, Replicated)
+	//bool bIsAiming;
 
-	FORCEINLINE bool IsAiming() const { return bIsAiming; }
+	//UFUNCTION(BlueprintPure, Category = "Weapons")
+	//bool IsAiming() const;
 
 	void StartAiming();
 	void StopAiming();
@@ -67,8 +68,8 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerUseThrowable();
 
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = Movement)
-	bool bSprinting;
+	//UPROPERTY(Replicated, BlueprintReadOnly, Category = Movement)
+	//bool bSprinting;
 
 	bool CanSprint();
 

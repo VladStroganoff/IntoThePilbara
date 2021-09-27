@@ -53,8 +53,8 @@ void UPlayerMovement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(UPlayerMovement, bSprinting);
-	DOREPLIFETIME_CONDITION(UPlayerMovement, bIsAiming, COND_SkipOwner);
+	//DOREPLIFETIME(UPlayerMovement, bSprinting);
+	//DOREPLIFETIME_CONDITION(UPlayerMovement, bIsAiming, COND_SkipOwner);
 }
 
 void UPlayerMovement::Inject(APlayerManager* playerManager)
@@ -213,7 +213,7 @@ void UPlayerMovement::StopJumping()
 
 void UPlayerMovement::SetSprinting(const bool bNewSprinting)
 {
-	if ((bNewSprinting && !CanSprint()) || bNewSprinting == bSprinting)
+	if ((bNewSprinting && !CanSprint()) || bNewSprinting == PlayerManager->bSprinting)
 	{
 		return;
 	}
@@ -223,9 +223,9 @@ void UPlayerMovement::SetSprinting(const bool bNewSprinting)
 		ServerSetSprinting(bNewSprinting);
 	}
 
-	bSprinting = bNewSprinting;
+	PlayerManager->bSprinting = bNewSprinting;
 
-	PlayerManager->GetCharacterMovement()->MaxWalkSpeed = bSprinting ? SprintSpeed : WalkSpeed;
+	PlayerManager->GetCharacterMovement()->MaxWalkSpeed = PlayerManager->bSprinting ? SprintSpeed : WalkSpeed;
 }
 
 void UPlayerMovement::ServerSetSprinting_Implementation(const bool bNewSprinting)
@@ -237,6 +237,11 @@ bool UPlayerMovement::ServerSetSprinting_Validate(const bool bNewSprinting)
 {
 	return true;
 }
+
+//bool UPlayerMovement::IsAiming() const
+//{
+//	return PlayerManager->bIsAiming;
+//}
 
 void UPlayerMovement::StartAiming()
 {
@@ -253,7 +258,7 @@ void UPlayerMovement::StopAiming()
 
 void UPlayerMovement::SetAiming(const bool bNewAiming)
 {
-	if (bNewAiming && !CanAim() || bNewAiming == bIsAiming)
+	if (bNewAiming && !CanAim() || bNewAiming == PlayerManager->bIsAiming)
 		return;
 
 	if (PlayerManager->GetLocalRole() < ROLE_Authority)
@@ -261,7 +266,7 @@ void UPlayerMovement::SetAiming(const bool bNewAiming)
 		ServerSetAiming(bNewAiming);
 	}
 
-	bIsAiming = bNewAiming;
+	PlayerManager->bIsAiming = bNewAiming;
 }
 
 void UPlayerMovement::ServerSetAiming_Implementation(const bool bNewAiming)
@@ -277,7 +282,7 @@ bool UPlayerMovement::CanAim()
 
 bool UPlayerMovement::CanSprint()
 {
-	return !IsAiming();
+	return !PlayerManager->IsAiming();
 }
 
 void UPlayerMovement::UseThrowable()

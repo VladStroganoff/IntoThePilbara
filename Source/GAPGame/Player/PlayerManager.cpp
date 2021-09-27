@@ -170,6 +170,18 @@ UThrowableItem * APlayerManager::GetThrowable() const
 //	}
 //}
 
+UWorld* APlayerManager::GetWorld() const
+{
+	if (!HasAnyFlags(RF_ClassDefaultObject))
+	{
+		return GetOuter()->GetWorld();
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
 void APlayerManager::SpawnThrowable()
 {
 	if (HasAuthority())
@@ -442,6 +454,10 @@ void APlayerManager::OnRep_EquippedWeapon()
 
 void APlayerManager::BeginMeleeAttack()
 {
+	float asd = GetWorld()->TimeSince(LastMeleeAttackTime);
+	float asd1 = MeleeAttackMontage->GetPlayLength();
+
+
 	if (GetWorld()->TimeSince(LastMeleeAttackTime) > MeleeAttackMontage->GetPlayLength())
 	{
 		FHitResult hit;
@@ -685,7 +701,7 @@ void APlayerManager::Tick(float DeltaTime)
 
 	if (IsLocallyControlled())
 	{
-		const float desieredFOV = PlayerMovement->IsAiming() ? 70.0f : 100.0f; // move these values to to the weapon class?
+		const float desieredFOV = IsAiming() ? 70.0f : 100.0f; // move these values to to the weapon class?
 		CameraComponent->SetFieldOfView(FMath::FInterpTo(CameraComponent->FieldOfView, desieredFOV, DeltaTime, 10.0f));
 
 		if (EquippedWeapon)
@@ -693,7 +709,7 @@ void APlayerManager::Tick(float DeltaTime)
 			const FVector aimDownSightLocation = EquippedWeapon->GetWeaponMesh()->GetSocketLocation(NAME_AimDownSightsSocket);
 			const FVector defaultCameraLocation = GetMesh()->GetSocketLocation(FName("CameraSocket"));
 
-			FVector cameraLocation = PlayerMovement->bIsAiming ? aimDownSightLocation : defaultCameraLocation;
+			FVector cameraLocation = bIsAiming ? aimDownSightLocation : defaultCameraLocation;
 
 			const float interpSpeed = FVector::Dist(aimDownSightLocation, defaultCameraLocation) / EquippedWeapon->AimDownSightTime;
 			CameraComponent->SetWorldLocation(FMath::VInterpTo(CameraComponent->GetComponentLocation(), cameraLocation, DeltaTime, interpSpeed));
@@ -905,7 +921,7 @@ void APlayerManager::Interact()
 // Called to bind functionality to input
 void APlayerManager::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	PlayerInputComponent->SetuInput(PlayerInputComponent)
+	PlayerMovement->SetuInput(PlayerInputComponent);
 
 	/*Super::SetupPlayerInputComponent(PlayerInputComponent);
 
@@ -944,13 +960,13 @@ void APlayerManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	//DOREPLIFETIME(APlayerManager, bSprinting);
+	DOREPLIFETIME(APlayerManager, bSprinting);
 	DOREPLIFETIME(APlayerManager, LootSource);
 	DOREPLIFETIME(APlayerManager, EquippedWeapon);
 	DOREPLIFETIME(APlayerManager, Killer);
 
 	DOREPLIFETIME_CONDITION(APlayerManager, Heath, COND_OwnerOnly); // will only replicate to the same client
-	//DOREPLIFETIME_CONDITION(APlayerManager, bIsAiming, COND_SkipOwner);
+	DOREPLIFETIME_CONDITION(APlayerManager, bIsAiming, COND_SkipOwner);
 }
 
 void APlayerManager::OnRep_LootSource()

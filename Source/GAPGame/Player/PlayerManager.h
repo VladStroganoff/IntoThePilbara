@@ -106,7 +106,7 @@ public:
 	void Interact();
 	FTimerHandle _timerHandleInteract;
 
-
+	virtual class UWorld* GetWorld() const override;
 
 protected:
 	
@@ -285,8 +285,8 @@ protected:
 	//UPROPERTY()
 	//float WalkSpeed;
 
-	//UPROPERTY(Replicated, BlueprintReadOnly, Category = Movement)
-	//bool bSprinting;
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = Movement)
+	bool bSprinting;
 
 	//bool CanSprint();
 
@@ -311,13 +311,13 @@ protected:
 	//void StartAiming();
 	//void StopAiming();
 
-	void SetAiming(const bool bNewAiming);
+	//void SetAiming(const bool bNewAiming);
 
-	UFUNCTION(Server, Reliable)
-	void ServerSetAiming(const bool bNewAiming);
+	//UFUNCTION(Server, Reliable)
+	//void ServerSetAiming(const bool bNewAiming);
 
-	//UPROPERTY(Transient, Replicated)
-	//bool bIsAiming;
+	UPROPERTY(Transient, Replicated)
+	bool bIsAiming;
 
 public:
 
@@ -327,8 +327,8 @@ public:
 	FORCEINLINE bool IsAlive() const { return Killer == nullptr; };
 
 
-	//UFUNCTION(BlueprintPure, Category = "Weapons")
-	//FORCEINLINE bool IsAiming() const { return bIsAiming; }
+	UFUNCTION(BlueprintPure, Category = "Weapons")
+	FORCEINLINE bool IsAiming() const { return bIsAiming; }
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
