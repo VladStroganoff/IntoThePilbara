@@ -117,6 +117,36 @@ void APlayerManager::BeginPlay()
 	}
 }
 
+// Called to bind functionality to input
+void APlayerManager::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	//PlayerMovement->SetuInput(this);
+
+	/*Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerManager::StartFire);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerManager::StopFire);
+
+	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &APlayerManager::StartAiming);
+	PlayerInputComponent->BindAction("Aim", IE_Released, this, &APlayerManager::StopAiming);
+	PlayerInputComponent->BindAction("Throw", IE_Released, this, &APlayerManager::UseThrowable);
+
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+
+	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &APlayerManager::BeginInteract);
+	PlayerInputComponent->BindAction("Interact", IE_Released, this, &APlayerManager::EndInteract);
+
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &APlayerManager::StartCrouching);
+	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &APlayerManager::StopCrouching);
+
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &APlayerManager::StartSprinting);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &APlayerManager::StopSprinting);*/
+
+	PlayerInputComponent->BindAxis("MoveForward", this, &APlayerManager::MoveForward);
+	//PlayerInputComponent->BindAxis("MoveRight", this, &APlayerManager::MoveRight);
+}
+
 //void APlayerManager::ServerUseThrowable_Implementation()
 //{
 //	UseThrowable();
@@ -170,17 +200,6 @@ UThrowableItem * APlayerManager::GetThrowable() const
 //	}
 //}
 
-UWorld* APlayerManager::GetWorld() const
-{
-	if (!HasAnyFlags(RF_ClassDefaultObject))
-	{
-		return GetOuter()->GetWorld();
-	}
-	else
-	{
-		return nullptr;
-	}
-}
 
 void APlayerManager::SpawnThrowable()
 {
@@ -611,14 +630,20 @@ void APlayerManager::OnRep_Killer()
 //	UnCrouch();
 //}
 //
-//void APlayerManager::MoveForward(float val)
-//{
-//	if (val == 0)
-//		return;
-//
-//	AddMovementInput(GetActorForwardVector(), val);
-//
-//}
+void APlayerManager::MoveForward(float val)
+{
+	if (val == 0)
+		return;
+
+	AddMovementInput(GetActorForwardVector(), val);
+}
+
+
+void APlayerManager::MoveForwardForReal(float val)
+{
+	AddMovementInput(GetActorForwardVector(), val);
+}
+
 //
 //void APlayerManager::MoveRight(float val)
 //{
@@ -918,35 +943,7 @@ void APlayerManager::Interact()
 //	return true;
 //}
 
-// Called to bind functionality to input
-void APlayerManager::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	PlayerMovement->SetuInput(PlayerInputComponent);
 
-	/*Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerManager::StartFire);
-	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerManager::StopFire);
-
-	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &APlayerManager::StartAiming);
-	PlayerInputComponent->BindAction("Aim", IE_Released, this, &APlayerManager::StopAiming);
-	PlayerInputComponent->BindAction("Throw", IE_Released, this, &APlayerManager::UseThrowable);
-
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
-
-	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &APlayerManager::BeginInteract);
-	PlayerInputComponent->BindAction("Interact", IE_Released, this, &APlayerManager::EndInteract);
-
-	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &APlayerManager::StartCrouching);
-	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &APlayerManager::StopCrouching);
-
-	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &APlayerManager::StartSprinting);
-	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &APlayerManager::StopSprinting);
-
-	PlayerInputComponent->BindAxis("MoveForward", this, &APlayerManager::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerManager::MoveRight);*/
-}
 
 void APlayerManager::OnLootSourceOwnerDestroyed(AActor * destroyedActor)
 {

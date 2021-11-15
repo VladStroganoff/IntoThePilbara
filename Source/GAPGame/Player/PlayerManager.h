@@ -106,7 +106,6 @@ public:
 	void Interact();
 	FTimerHandle _timerHandleInteract;
 
-	virtual class UWorld* GetWorld() const override;
 
 protected:
 	
@@ -301,7 +300,8 @@ protected:
 
 	//void StartCrouching();
 	//void StopCrouching();
-	//void MoveForward(float val);
+	void MoveForward(float val);
+	void MoveForwardForReal(float val);
 	//void MoveRight(float val);
 	//void LookUp(float val);
 	//void Turn(float val);

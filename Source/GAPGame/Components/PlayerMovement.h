@@ -21,7 +21,7 @@ public:
 	class APlayerManager* PlayerManager;
 
 	void Inject(APlayerManager* playerManager);
-	void SetuInput(UInputComponent* PlayerInputComponent);
+	void SetuInput(APlayerManager* PlayerInputComponent);
 
 	void StartCrouching();
 	void StopCrouching();

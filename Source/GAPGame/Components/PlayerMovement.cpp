@@ -23,29 +23,29 @@ void UPlayerMovement::BeginPlay()
 
 
 
-void UPlayerMovement::SetuInput(UInputComponent* PlayerInputComponent)
+void UPlayerMovement::SetuInput(APlayerManager* PlayerInputComponent)
 {
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &UPlayerMovement::StartFire);
-	PlayerInputComponent->BindAction("Fire", IE_Released, this, &UPlayerMovement::StopFire);
+	PlayerInputComponent->InputComponent->BindAction("Fire", IE_Pressed, this, &UPlayerMovement::StartFire);
+	PlayerInputComponent->InputComponent->BindAction("Fire", IE_Released, this, &UPlayerMovement::StopFire);
 
-	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &UPlayerMovement::StartAiming);
-	PlayerInputComponent->BindAction("Aim", IE_Released, this, &UPlayerMovement::StopAiming);
-	PlayerInputComponent->BindAction("Throw", IE_Released, this, &UPlayerMovement::UseThrowable);
+	PlayerInputComponent->InputComponent->BindAction("Aim", IE_Pressed, this, &UPlayerMovement::StartAiming);
+	PlayerInputComponent->InputComponent->BindAction("Aim", IE_Released, this, &UPlayerMovement::StopAiming);
+	PlayerInputComponent->InputComponent->BindAction("Throw", IE_Released, this, &UPlayerMovement::UseThrowable);
 
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &UPlayerMovement::Jump);
-	PlayerInputComponent->BindAction("Jump", IE_Released, this, &UPlayerMovement::StopJumping);
+	PlayerInputComponent->InputComponent->BindAction("Jump", IE_Pressed, this, &UPlayerMovement::Jump);
+	PlayerInputComponent->InputComponent->BindAction("Jump", IE_Released, this, &UPlayerMovement::StopJumping);
 
-	PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &UPlayerMovement::BeginInteract);
-	PlayerInputComponent->BindAction("Interact", IE_Released, this, &UPlayerMovement::EndInteract);
+	PlayerInputComponent->InputComponent->BindAction("Interact", IE_Pressed, this, &UPlayerMovement::BeginInteract);
+	PlayerInputComponent->InputComponent->BindAction("Interact", IE_Released, this, &UPlayerMovement::EndInteract);
 
-	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &UPlayerMovement::StartCrouching);
-	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &UPlayerMovement::StopCrouching);
+	PlayerInputComponent->InputComponent->BindAction("Crouch", IE_Pressed, this, &UPlayerMovement::StartCrouching);
+	PlayerInputComponent->InputComponent->BindAction("Crouch", IE_Released, this, &UPlayerMovement::StopCrouching);
 
-	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &UPlayerMovement::StartSprinting);
-	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &UPlayerMovement::StopSprinting);
+	PlayerInputComponent->InputComponent->BindAction("Sprint", IE_Pressed, this, &UPlayerMovement::StartSprinting);
+	PlayerInputComponent->InputComponent->BindAction("Sprint", IE_Released, this, &UPlayerMovement::StopSprinting);
 
-	PlayerInputComponent->BindAxis("MoveForward", this, &UPlayerMovement::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &UPlayerMovement::MoveRight);
+	PlayerInputComponent->InputComponent->BindAxis("MoveForward", this, &UPlayerMovement::MoveForward);
+	PlayerInputComponent->InputComponent->BindAxis("MoveRight", this, &UPlayerMovement::MoveRight);
 }
 
 
@@ -80,7 +80,6 @@ void UPlayerMovement::MoveForward(float val)
 		return;
 
 	PlayerManager->AddMovementInput(PlayerManager->GetActorForwardVector(), val);
-
 }
 
 void UPlayerMovement::MoveRight(float val)
@@ -88,7 +87,7 @@ void UPlayerMovement::MoveRight(float val)
 	if (val == 0)
 		return;
 
-	PlayerManager->AddMovementInput(PlayerManager->GetActorRightVector(), val);
+	PlayerManager->MoveForwardForReal(val);
 }
 
 void UPlayerMovement::LookUp(float val)
