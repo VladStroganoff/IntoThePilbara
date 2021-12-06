@@ -3,8 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/PlayerMovement.h"
-#include "Components/PlayerMovement.h"
 #include "Items/EquippableItem.h"
 #include "GameFramework/Character.h"
 #include "PlayerManager.generated.h"
@@ -65,8 +63,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Components")
 	class UCameraComponent* CameraComponent;
 
-	UPROPERTY(BlueprintReadOnly, Category = Mesh)
-	class UPlayerMovement* PlayerMovement;
 
 	UPROPERTY(EditAnywhere, Category = "Components")
 	class USkeletalMeshComponent* HelmetMesh;
@@ -141,25 +137,25 @@ protected:
 
 	void CouldNotFindInteractable();
 
-	//void BeginInteract();
-	//void EndInteract();
+	void BeginInteract();
+	void EndInteract();
 
-	//UFUNCTION(Server, Reliable, WithValidation)
-	//void ServerBeginInteract();
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerBeginInteract();
 
-	//UFUNCTION(Server, Reliable, WithValidation)
-	//void ServerEndInteract();
-
-
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerEndInteract();
 
 
 
-	//UFUNCTION(Server, Reliable)
-	//void ServerUseThrowable();
+
+
+	UFUNCTION(Server, Reliable)
+	void ServerUseThrowable();
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastPlayThrowableTossFX(class UAnimMontage* montageToPlay);
 
-	//void UseThrowable();
+	void UseThrowable();
 	void SpawnThrowable();
 
 public:
@@ -232,8 +228,8 @@ protected:
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
 
-	//void StartFire();
-	//void StopFire();
+	void StartFire();
+	void StopFire();
 
 
 
@@ -278,43 +274,43 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Health")
 	float MaxHealth;
 
-	//UPROPERTY(EditDefaultsOnly, Category = Movement)
-	//float SprintSpeed;
+	UPROPERTY(EditDefaultsOnly, Category = Movement)
+	float SprintSpeed;
 
-	//UPROPERTY()
-	//float WalkSpeed;
+	UPROPERTY()
+	float WalkSpeed;
 
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = Movement)
 	bool bSprinting;
 
-	//bool CanSprint();
+	bool CanSprint();
 
-	//void StartSprinting();
-	//void StopSprinting();
+	void StartSprinting();
+	void StopSprinting();
 
-	//void SetSprinting(const bool bNewSprinting);
+	void SetSprinting(const bool bNewSprinting);
 
-	//UFUNCTION(Server, Reliable, WithValidation)
-	//void ServerSetSprinting(const bool bNewSprinting);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSetSprinting(const bool bNewSprinting);
 
 
-	//void StartCrouching();
-	//void StopCrouching();
+	void StartCrouching();
+	void StopCrouching();
 	void MoveForward(float val);
 	void MoveForwardForReal(float val);
-	//void MoveRight(float val);
-	//void LookUp(float val);
-	//void Turn(float val);
+	void MoveRight(float val);
+	void LookUp(float val);
+	void Turn(float val);
 
-	//bool CanAim();
+	bool CanAim();
 
-	//void StartAiming();
-	//void StopAiming();
+	void StartAiming();
+	void StopAiming();
 
-	//void SetAiming(const bool bNewAiming);
+	void SetAiming(const bool bNewAiming);
 
-	//UFUNCTION(Server, Reliable)
-	//void ServerSetAiming(const bool bNewAiming);
+	UFUNCTION(Server, Reliable)
+	void ServerSetAiming(const bool bNewAiming);
 
 	UPROPERTY(Transient, Replicated)
 	bool bIsAiming;

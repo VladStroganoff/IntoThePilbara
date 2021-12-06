@@ -43,9 +43,6 @@ APlayerManager::APlayerManager()
 	CameraComponent->SetupAttachment(SpringArmComponent);
 	CameraComponent->bUsePawnControlRotation = true;
 
-	PlayerMovement = CreateDefaultSubobject<UPlayerMovement>("Movement");
-	PlayerMovement->Inject(this);
-	UE_LOG(LogTemp, Warning, TEXT("DID INJECT PLAYER MOVEMENT, %d"), PlayerMovement->PlayerManager);
 
 
 	HelmetMesh = PlayerMeshes.Add(EEquippableSlot::EIS_Sensor, CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SensorMesh")));
@@ -120,9 +117,7 @@ void APlayerManager::BeginPlay()
 // Called to bind functionality to input
 void APlayerManager::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	//PlayerMovement->SetuInput(this);
-
-	/*Super::SetupPlayerInputComponent(PlayerInputComponent);
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APlayerManager::StartFire);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APlayerManager::StopFire);
@@ -141,16 +136,16 @@ void APlayerManager::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &APlayerManager::StopCrouching);
 
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &APlayerManager::StartSprinting);
-	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &APlayerManager::StopSprinting);*/
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &APlayerManager::StopSprinting);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &APlayerManager::MoveForward);
-	//PlayerInputComponent->BindAxis("MoveRight", this, &APlayerManager::MoveRight);
+	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerManager::MoveRight);
 }
 
-//void APlayerManager::ServerUseThrowable_Implementation()
-//{
-//	UseThrowable();
-//}
+void APlayerManager::ServerUseThrowable_Implementation()
+{
+	UseThrowable();
+}
 
 void APlayerManager::MulticastPlayThrowableTossFX_Implementation(UAnimMontage* montageToPlay)
 {
@@ -170,35 +165,35 @@ UThrowableItem * APlayerManager::GetThrowable() const
 
 	return equippedThrowable;
 }
-//
-//void APlayerManager::UseThrowable()
-//{
-//	if (CanUseThrowable())
-//	{
-//		if (UThrowableItem* throwable = GetThrowable())
-//		{
-//			if (HasAuthority())
-//			{
-//				SpawnThrowable();
-//					if (PlayerInventory)
-//					{
-//						PlayerInventory->ConsumeItem(throwable, 1);
-//					}
-//			}
-//			else
-//			{
-//				if (throwable->GetQuantity() <= 1)
-//				{
-//					EquippedItems.Remove(EEquippableSlot::EIS_ThrowbleItem);
-//					OnEquippedItemsChanged.Broadcast(EEquippableSlot::EIS_ThrowbleItem, nullptr);
-//				}
-//
-//				PlayAnimMontage(throwable->ThrowableTossAnimation);
-//				ServerUseThrowable();
-//			}
-//		}
-//	}
-//}
+
+void APlayerManager::UseThrowable()
+{
+	if (CanUseThrowable())
+	{
+		if (UThrowableItem* throwable = GetThrowable())
+		{
+			if (HasAuthority())
+			{
+				SpawnThrowable();
+					if (PlayerInventory)
+					{
+						PlayerInventory->ConsumeItem(throwable, 1);
+					}
+			}
+			else
+			{
+				if (throwable->GetQuantity() <= 1)
+				{
+					EquippedItems.Remove(EEquippableSlot::EIS_ThrowbleItem);
+					OnEquippedItemsChanged.Broadcast(EEquippableSlot::EIS_ThrowbleItem, nullptr);
+				}
+
+				PlayAnimMontage(throwable->ThrowableTossAnimation);
+				ServerUseThrowable();
+			}
+		}
+	}
+}
 
 
 void APlayerManager::SpawnThrowable()
@@ -451,25 +446,25 @@ void APlayerManager::OnRep_EquippedWeapon()
 	}
 }
 
-//void APlayerManager::StartFire()
-//{
-//	if (EquippedWeapon)
-//	{
-//		EquippedWeapon->StartFire();
-//	}
-//	else
-//	{
-//		BeginMeleeAttack();
-//	}
-//}
-//
-//void APlayerManager::StopFire()
-//{
-//	if (EquippedWeapon)
-//	{
-//		EquippedWeapon->StopFire();
-//	}
-//}
+void APlayerManager::StartFire()
+{
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->StartFire();
+	}
+	else
+	{
+		BeginMeleeAttack();
+	}
+}
+
+void APlayerManager::StopFire()
+{
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->StopFire();
+	}
+}
 
 void APlayerManager::BeginMeleeAttack()
 {
@@ -577,59 +572,59 @@ void APlayerManager::OnRep_Killer()
 		}
 	}
 }
-//
-//bool APlayerManager::CanSprint()
-//{
-//	return !IsAiming();
-//}
 
-//void APlayerManager::StartSprinting()
-//{
-//	SetSprinting(true);
-//}
-//
-//void APlayerManager::StopSprinting()
-//{
-//	SetSprinting(false);
-//}
-//
-//void APlayerManager::SetSprinting(const bool bNewSprinting)
-//{
-//	if ((bNewSprinting && !CanSprint()) || bNewSprinting == bSprinting)
-//	{
-//		return;
-//	}
-//
-//	if (GetLocalRole() < ROLE_Authority)
-//	{
-//		ServerSetSprinting(bNewSprinting);
-//	}
-//
-//	bSprinting = bNewSprinting;
-//
-//	GetCharacterMovement()->MaxWalkSpeed = bSprinting ? SprintSpeed : WalkSpeed;
-//}
-//
-//void APlayerManager::ServerSetSprinting_Implementation(const bool bNewSprinting)
-//{
-//	SetSprinting(bNewSprinting);
-//}
-//
-//bool APlayerManager::ServerSetSprinting_Validate(const bool bNewSprinting)
-//{
-//	return true;
-//}
+bool APlayerManager::CanSprint()
+{
+	return !IsAiming();
+}
 
-//void APlayerManager::StartCrouching()
-//{
-//	Crouch();
-//}
-//
-//void APlayerManager::StopCrouching()
-//{
-//	UnCrouch();
-//}
-//
+void APlayerManager::StartSprinting()
+{
+	SetSprinting(true);
+}
+
+void APlayerManager::StopSprinting()
+{
+	SetSprinting(false);
+}
+
+void APlayerManager::SetSprinting(const bool bNewSprinting)
+{
+	if ((bNewSprinting && !CanSprint()) || bNewSprinting == bSprinting)
+	{
+		return;
+	}
+
+	if (GetLocalRole() < ROLE_Authority)
+	{
+		ServerSetSprinting(bNewSprinting);
+	}
+
+	bSprinting = bNewSprinting;
+
+	GetCharacterMovement()->MaxWalkSpeed = bSprinting ? SprintSpeed : WalkSpeed;
+}
+
+void APlayerManager::ServerSetSprinting_Implementation(const bool bNewSprinting)
+{
+	SetSprinting(bNewSprinting);
+}
+
+bool APlayerManager::ServerSetSprinting_Validate(const bool bNewSprinting)
+{
+	return true;
+}
+
+void APlayerManager::StartCrouching()
+{
+	Crouch();
+}
+
+void APlayerManager::StopCrouching()
+{
+	UnCrouch();
+}
+
 void APlayerManager::MoveForward(float val)
 {
 	if (val == 0)
@@ -644,65 +639,65 @@ void APlayerManager::MoveForwardForReal(float val)
 	AddMovementInput(GetActorForwardVector(), val);
 }
 
-//
-//void APlayerManager::MoveRight(float val)
-//{
-//	if (val == 0)
-//		return;
-//
-//	AddMovementInput(GetActorRightVector(), val);
-//}
-//
-//void APlayerManager::LookUp(float val)
-//{
-//	if (val == 0)
-//		return;
-//
-//	AddControllerPitchInput(val);
-//}
-//
-//void APlayerManager::Turn(float val)
-//{
-//	if (val == 0)
-//		return;
-//	AddControllerYawInput(val);
-//}
 
-//bool APlayerManager::CanAim()
-//{
-//	return EquippedWeapon != nullptr;
-//}
+void APlayerManager::MoveRight(float val)
+{
+	if (val == 0)
+		return;
 
-//void APlayerManager::StartAiming()
-//{
-//	if (CanAim())
-//	{
-//		SetAiming(true);
-//	}
-//}
-//
-//void APlayerManager::StopAiming()
-//{
-//	SetAiming(false);
-//}
-//
-//void APlayerManager::SetAiming(const bool bNewAiming)
-//{
-//	if (bNewAiming && !CanAim() || bNewAiming == bIsAiming)
-//		return;
-//
-//	if (GetLocalRole() < ROLE_Authority)
-//	{
-//		ServerSetAiming(bNewAiming);
-//	}
-//
-//	bIsAiming = bNewAiming;
-//}
-//
-//void APlayerManager::ServerSetAiming_Implementation(const bool bNewAiming)
-//{
-//	SetAiming(bNewAiming);
-//}
+	AddMovementInput(GetActorRightVector(), val);
+}
+
+void APlayerManager::LookUp(float val)
+{
+	if (val == 0)
+		return;
+
+	AddControllerPitchInput(val);
+}
+
+void APlayerManager::Turn(float val)
+{
+	if (val == 0)
+		return;
+	AddControllerYawInput(val);
+}
+
+bool APlayerManager::CanAim()
+{
+	return EquippedWeapon != nullptr;
+}
+
+void APlayerManager::StartAiming()
+{
+	if (CanAim())
+	{
+		SetAiming(true);
+	}
+}
+
+void APlayerManager::StopAiming()
+{
+	SetAiming(false);
+}
+
+void APlayerManager::SetAiming(const bool bNewAiming)
+{
+	if (bNewAiming && !CanAim() || bNewAiming == bIsAiming)
+		return;
+
+	if (GetLocalRole() < ROLE_Authority)
+	{
+		ServerSetAiming(bNewAiming);
+	}
+
+	bIsAiming = bNewAiming;
+}
+
+void APlayerManager::ServerSetAiming_Implementation(const bool bNewAiming)
+{
+	SetAiming(bNewAiming);
+}
 
 void APlayerManager::StartReload()
 {
@@ -840,7 +835,7 @@ void APlayerManager::CouldNotFindInteractable()
 
 		if (InteractionData.bInteractHeld)
 		{
-			PlayerMovement->EndInteract();
+			EndInteract();
 		}
 	}
 
@@ -850,7 +845,7 @@ void APlayerManager::CouldNotFindInteractable()
 
 void APlayerManager::FoundInteractable(UInteractionComponent * interactable)
 {
-	PlayerMovement->EndInteract();
+	EndInteract();
 	if (UInteractionComponent* OldInteractable = GetInteractable())
 	{
 		OldInteractable->EndFocus(this);
@@ -860,49 +855,49 @@ void APlayerManager::FoundInteractable(UInteractionComponent * interactable)
 	interactable->BeginFocus(this);
 }
 
-//void APlayerManager::BeginInteract()
-//{
-//	if (!HasAuthority())
-//	{
-//		ServerBeginInteract();
-//	}
-//
-//	if(HasAuthority())
-//	{
-//		PreformInteractionCheck();
-//	}
-//
-//	InteractionData.bInteractHeld = true;
-//
-//	if (UInteractionComponent* Interactable = GetInteractable())
-//	{
-//		Interactable->BeginInteract(this);
-//		if (FMath::IsNearlyZero(Interactable->InteractionTime))
-//		{
-//			Interact();
-//		}
-//		else
-//		{
-//			GetWorldTimerManager().SetTimer(_timerHandleInteract, this, &APlayerManager::Interact, Interactable->InteractionTime, false);
-//		}
-//	}
-//}
-//
-//void APlayerManager::EndInteract()
-//{
-//	if (!HasAuthority())
-//		ServerEndInteract();
-//
-//	InteractionData.bInteractHeld = false;
-//
-//	GetWorldTimerManager().ClearTimer(_timerHandleInteract);
-//
-//	if (UInteractionComponent* Interactable = GetInteractable())
-//	{
-//		Interactable->EndInteract(this);
-//	}
-//
-//}
+void APlayerManager::BeginInteract()
+{
+	if (!HasAuthority())
+	{
+		ServerBeginInteract();
+	}
+
+	if(HasAuthority())
+	{
+		PreformInteractionCheck();
+	}
+
+	InteractionData.bInteractHeld = true;
+
+	if (UInteractionComponent* Interactable = GetInteractable())
+	{
+		Interactable->BeginInteract(this);
+		if (FMath::IsNearlyZero(Interactable->InteractionTime))
+		{
+			Interact();
+		}
+		else
+		{
+			GetWorldTimerManager().SetTimer(_timerHandleInteract, this, &APlayerManager::Interact, Interactable->InteractionTime, false);
+		}
+	}
+}
+
+void APlayerManager::EndInteract()
+{
+	if (!HasAuthority())
+		ServerEndInteract();
+
+	InteractionData.bInteractHeld = false;
+
+	GetWorldTimerManager().ClearTimer(_timerHandleInteract);
+
+	if (UInteractionComponent* Interactable = GetInteractable())
+	{
+		Interactable->EndInteract(this);
+	}
+
+}
 
 bool APlayerManager::CheckAuthority()
 {
@@ -923,25 +918,25 @@ void APlayerManager::Interact()
 
 }
 
-//void APlayerManager::ServerBeginInteract_Implementation()
-//{
-//	BeginInteract();
-//}
-//
-//bool APlayerManager::ServerBeginInteract_Validate()
-//{
-//	return true;
-//}
+void APlayerManager::ServerBeginInteract_Implementation()
+{
+	BeginInteract();
+}
 
-//void APlayerManager::ServerEndInteract_Implementation()
-//{
-//	PlayerMovement->EndInteract();
-//}
-//
-//bool APlayerManager::ServerEndInteract_Validate()
-//{
-//	return true;
-//}
+bool APlayerManager::ServerBeginInteract_Validate()
+{
+	return true;
+}
+
+void APlayerManager::ServerEndInteract_Implementation()
+{
+	EndInteract();
+}
+
+bool APlayerManager::ServerEndInteract_Validate()
+{
+	return true;
+}
 
 
 
