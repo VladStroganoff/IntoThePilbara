@@ -8,6 +8,13 @@ public class GAPGameClientTarget : TargetRules
 	public GAPGameClientTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Client;
-		ExtraModuleNames.Add("GAPGame");
+
+        bUsesSteam = true;
+        bUseLoggingInShipping = true;
+
+        GlobalDefinitions.Add("UE4_PROJECT_STEAMGAMEDIR=\"Spacewar\"");
+        GlobalDefinitions.Add("UE4_PROJECT_STEAMSHIPPINGID=480");
+
+        ExtraModuleNames.Add("GAPGame");
 	}
 }
