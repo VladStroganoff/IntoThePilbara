@@ -683,7 +683,7 @@ void APlayerManager::StopAiming()
 
 void APlayerManager::SetAiming(const bool bNewAiming)
 {
-	if (bNewAiming && !CanAim() || bNewAiming == bIsAiming)
+	if ((bNewAiming && !CanAim()) || bNewAiming == bIsAiming)
 		return;
 
 	if (GetLocalRole() < ROLE_Authority)

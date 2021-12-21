@@ -1,4 +1,5 @@
 
+#include "PlayerMovement.h"
 #include "Net/UnrealNetwork.h"
 #include "Components/InteractionComponent.h"	
 #include "Weapons/Weapon.h"
@@ -7,7 +8,6 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"	
 #include "Components/PlayerMovement.h"
-#include "PlayerMovement.h"
 
 UPlayerMovement::UPlayerMovement()
 {
@@ -212,19 +212,7 @@ void UPlayerMovement::StopJumping()
 
 void UPlayerMovement::SetSprinting(const bool bNewSprinting)
 {
-	if ((bNewSprinting && !CanSprint()) || bNewSprinting == PlayerManager->bSprinting)
-	{
-		return;
-	}
-
-	if (PlayerManager->CheckRole() < ROLE_Authority)
-	{
-		ServerSetSprinting(bNewSprinting);
-	}
-
-	PlayerManager->bSprinting = bNewSprinting;
-
-	PlayerManager->GetCharacterMovement()->MaxWalkSpeed = PlayerManager->bSprinting ? SprintSpeed : WalkSpeed;
+	
 }
 
 void UPlayerMovement::ServerSetSprinting_Implementation(const bool bNewSprinting)
@@ -257,7 +245,7 @@ void UPlayerMovement::StopAiming()
 
 void UPlayerMovement::SetAiming(const bool bNewAiming)
 {
-	if (bNewAiming && !CanAim() || bNewAiming == PlayerManager->bIsAiming)
+	if ((bNewAiming && !CanAim()) || bNewAiming == PlayerManager->bIsAiming)
 		return;
 
 	if (PlayerManager->GetLocalRole() < ROLE_Authority)
